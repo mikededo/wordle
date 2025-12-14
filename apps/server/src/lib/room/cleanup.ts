@@ -39,7 +39,9 @@ const runCleanup = () => {
 
   if (cleanedCount > 0) {
     const stats = getStats()
-    console.log(`[Cleanup] Removed ${cleanedCount} stale rooms. Active: ${stats.activeRooms} rooms, ${stats.totalPlayers} players`)
+    console.log(
+      `[Cleanup] Removed ${cleanedCount} stale rooms. Active: ${stats.activeRooms} rooms, ${stats.totalPlayers} players`
+    )
   }
 }
 

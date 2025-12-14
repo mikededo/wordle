@@ -1,6 +1,6 @@
 import { startCleanup } from '$lib/room/cleanup'
 import { getStats } from '$lib/room/manager'
-import { handleClose, handleMessage } from '$lib/ws'
+import { handleClose, handleMessage } from '$lib/ws/handler'
 
 const PORT = Bun.env.PORT ? Number.parseInt(Bun.env.PORT, 10) : 3001
 const Logger = console

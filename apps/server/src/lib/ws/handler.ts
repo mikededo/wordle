@@ -43,9 +43,9 @@ export const handleMessage = (ws: InternalWebSocket, data: string) => {
     .andThen((message) => {
       switch (message.type) {
         case 'create_room':
-          return createRoom(ws, message.playerName).map((code) =>
+          return createRoom(ws, message.playerName).map((code) => {
             send(ws, { code, type: 'room_created' })
-          )
+          })
 
         case 'join_room':
           return joinRoom(ws, message.code, message.playerName).map(({ code, players }) => {
@@ -84,8 +84,6 @@ export const handleJoin = (ws: InternalWebSocket, code: string, playerName: stri
   joinRoom(ws, code, playerName)
     .map(({ code, players }) => {
       send(ws, { code, players, type: 'room_joined' })
-
-      return null
     })
     .mapErr((error) => {
       send(ws, { message: errorMessage(error), type: 'error' })

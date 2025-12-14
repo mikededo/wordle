@@ -127,3 +127,8 @@ export const deleteRoom = (code: string): boolean => {
   return true
 }
 
+export const resetState = () => {
+  rooms.clear()
+  playerRooms.clear()
+}
+
