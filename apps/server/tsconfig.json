@@ -6,6 +6,9 @@
     "moduleDetection": "force",
     "module": "Preserve",
     "moduleResolution": "bundler",
+    "paths": {
+      "$lib/*": ["./src/lib/*"]
+    },
     "allowImportingTsExtensions": true,
     "allowJs": true,
     "strict": true,

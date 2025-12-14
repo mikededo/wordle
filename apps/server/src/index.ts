@@ -1,24 +1,35 @@
+import { startCleanup } from '$lib/room/cleanup'
+import { getStats } from '$lib/room/manager'
+import { handleClose, handleMessage } from '$lib/ws'
+
+const PORT = Bun.env.PORT ? Number.parseInt(Bun.env.PORT, 10) : 3001
+const Logger = console
+
 const server = Bun.serve({
-  port: 3001,
   fetch(req, server) {
     if (server.upgrade(req)) {
-      return;
+      return
     }
-    return new Response('Upgrade failed', { status: 500 });
+    return new Response('Upgrade failed', { status: 500 })
   },
+  port: PORT,
   websocket: {
-    open(ws) {
-      console.log('Client connected');
-    },
-    message(ws, message) {
-      console.log('Received:', message);
-      ws.send(`Echo: ${message}`);
-    },
     close(ws) {
-      console.log('Client disconnected');
+      handleClose(ws)
     },
-  },
-});
+    message(ws, data) {
+      handleMessage(ws, data.toString())
+    }
+  }
+})
 
-console.log(`WebSocket server running on ws://localhost:${server.port}`);
+startCleanup()
 
+setInterval(() => {
+  const stats = getStats()
+  if (stats.activeRooms > 0) {
+    Logger.log(`[Stats] ${stats.activeRooms} rooms, ${stats.totalPlayers} players`)
+  }
+}, 5 * 60 * 1000)
+
+Logger.log(`WebSocket server running on ws://localhost:${server.port}`)
