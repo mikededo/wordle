@@ -28,6 +28,7 @@ export default antfu(
     lessOpinionated: true,
     markdown: false,
     rules: {
+      'array-callback-return': 'off',
       'arrow-body-style': ['error', 'as-needed'],
       'func-style': ['error', 'expression', { allowArrowFunctions: true }]
     },
