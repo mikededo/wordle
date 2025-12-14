@@ -20,12 +20,11 @@ export default antfu(
       '**/*/build/',
       '**/*/dist/',
       'node_modules/',
-      'package/',
       'postcss.config.js',
       'tsconfig.tsbuildinfo'
     ],
     isInEditor: false,
-    jsonc: false,
+    jsonc: true,
     lessOpinionated: true,
     markdown: false,
     rules: {
