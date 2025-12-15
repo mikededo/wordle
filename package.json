@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": ["apps/*"],
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "dev": "bun run -F '*' dev"
   },
   "dependencies": {
     "eslint": "^9.39.2"
