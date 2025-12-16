@@ -1,18 +1,34 @@
 import type { ServerWebSocket } from 'bun'
-import type * as v from 'valibot'
 
-import type { ClientMessageSchema } from '$lib/room/schemas'
-
-export type ClientMessage = v.InferOutput<typeof ClientMessageSchema>
+import * as v from 'valibot'
 
 export type RoomState = 'finished' | 'lobby' | 'playing'
 
-export type ServerMessage = |
-  { message: string, type: 'error' } |
-  { playerName: string, type: 'player_joined' } |
-  { playerName: string, type: 'player_left' } |
-  { players: string[], type: 'room_joined', code: string } |
-  { type: 'room_created', code: string }
+export const ServerMessageSchema = v.variant('type', [
+  v.object({
+    message: v.string(),
+    type: v.literal('error')
+  }),
+  v.object({
+    playerName: v.string(),
+    type: v.literal('player_joined')
+  }),
+  v.object({
+    playerName: v.string(),
+    type: v.literal('player_left')
+  }),
+  v.object({
+    code: v.string(),
+    players: v.array(v.string()),
+    type: v.literal('room_joined')
+  }),
+  v.object({
+    code: v.string(),
+    type: v.literal('room_created')
+  })
+])
+
+export type ServerMessage = v.InferOutput<typeof ServerMessageSchema>
 
 export type RoomError = 'GAME_IN_PROGRESS' | 'INVALID_MESSAGE' | 'ROOM_NOT_FOUND'
 

@@ -1,6 +1,11 @@
 import type { Result } from 'neverthrow'
 
-import type { ClientMessage, InternalWebSocket, RoomError, ServerMessage } from '$lib/room/types'
+import type { ClientMessage } from '$lib/room/schemas'
+import type {
+  InternalWebSocket,
+  RoomError,
+  ServerMessage
+} from '$lib/room/types'
 
 import { err, ok } from 'neverthrow'
 import * as v from 'valibot'
