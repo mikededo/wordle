@@ -10,4 +10,8 @@ declare global {
   }
 }
 
+declare module 'tailwind-merge' {
+  type ClassNameValue = ClassValue
+}
+
 export {}
