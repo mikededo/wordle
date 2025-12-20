@@ -2,10 +2,11 @@
     import type { PageData } from './$types'
 
     import { ArrowRightToLine, DeleteIcon } from '@lucide/svelte'
+    import { fade } from 'svelte/transition'
     import { tv } from 'tailwind-variants'
 
     import Button from '$lib/components/button.svelte'
-    import { disconnectFromRoom, getAppContext } from '$lib/context/state.svelte'
+    import { disconnectFromRoom, getAppContext, startGame } from '$lib/context/state.svelte'
 
     type Props = { data: PageData }
     const { data }: Props = $props()
@@ -59,10 +60,32 @@
         round.keys[round.count].push(key)
     }
 
+    const onStartGame = () => {
+        startGame()
+    }
+
     const onDisconnect = () => {
         disconnectFromRoom()
     }
 </script>
+
+{#if !appState.user?.hasGameStarted}
+    <div class="fixed inset-0 bg-black opacity-50" transition:fade={{ duration: 150 }}></div>
+    <div
+        class="fixed left-1/2 top-1/2 z-50 flex min-w-80 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-4 rounded-lg bg-white p-4"
+        transition:fade={{ duration: 150 }}
+    >
+        <p class="w-full text-center text-lg font-medium">Game hasn't started yet</p>
+        <div class="flex w-full items-center gap-2">
+            <Button class="w-full" variant="default" onclick={onDisconnect}>
+                Disconnect
+            </Button>
+            <Button class="w-full" variant="primary" onclick={onStartGame}>
+                Start
+            </Button>
+        </div>
+    </div>
+{/if}
 
 <div class="flex h-dvh w-dvw flex-col">
     <header class="flex h-12 shrink-0 items-center justify-between border-b border-slate-200 px-4">

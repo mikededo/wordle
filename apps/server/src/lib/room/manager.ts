@@ -1,23 +1,25 @@
 import type { Result } from 'neverthrow'
 
-import type { InternalWebSocket, Player, Room, RoomError, ServerMessage } from '$lib/room/types'
+import type { RoomCode } from '$lib/room/code'
+import type { InternalWebSocket, Player, Room, ServerMessage } from '$lib/room/types'
 
 import { err, ok } from 'neverthrow'
 
-import { generateCode } from '$lib/room/code'
+import { generateCode, isValidRoomCode } from '$lib/room/code'
+import { RoomError, RoomState } from '$lib/room/types'
 
-const rooms = new Map<string, Room>()
-const playerRooms = new Map<InternalWebSocket, string>()
+const rooms = new Map<RoomCode, Room>()
+const playerRooms = new Map<InternalWebSocket, RoomCode>()
 
-const getRoomCodes = (): Set<string> => new Set(rooms.keys())
+const getRoomCodes = (): Set<RoomCode> => new Set(rooms.keys())
 
-export const getRoom = (code: string): Room | undefined => rooms.get(code.toUpperCase())
+export const getRoom = (code: string): Room | undefined => isValidRoomCode(code) ? rooms.get(code) : undefined
 
 const updateActivity = (room: Room) => {
   room.lastActivity = Date.now()
 }
 
-export const createRoom = (ws: InternalWebSocket, playerName: string): Result<string, never> => {
+export const createRoom = (ws: InternalWebSocket, playerName: string): Result<RoomCode, never> => {
   const code = generateCode(getRoomCodes())
   const now = Date.now()
 
@@ -27,7 +29,7 @@ export const createRoom = (ws: InternalWebSocket, playerName: string): Result<st
     host: ws,
     lastActivity: now,
     players: new Map([[ws, { name: playerName, ws }]]),
-    state: 'lobby'
+    state: RoomState.Lobby
   }
 
   rooms.set(code, room)
@@ -40,15 +42,20 @@ export const joinRoom = (
   ws: InternalWebSocket,
   code: string,
   playerName: string
-): Result<{ players: string[], code: string }, RoomError> => {
+): Result<{ players: string[], code: RoomCode }, RoomError> => {
+  const codeValidation = isValidRoomCode(code)
+  if (!codeValidation) {
+    return err(RoomError.RoomNotFound)
+  }
+
   const room = getRoom(code)
 
   if (!room) {
-    return err('ROOM_NOT_FOUND')
+    return err(RoomError.RoomNotFound)
   }
 
-  if (room.state !== 'lobby') {
-    return err('GAME_IN_PROGRESS')
+  if (room.state !== RoomState.Lobby) {
+    return err(RoomError.GameInProgress)
   }
 
   const player: Player = { name: playerName, ws }
@@ -94,7 +101,23 @@ export const leaveRoom = (ws: InternalWebSocket): { player: Player, room: Room }
   return { player, room: room.players.size > 0 ? room : room }
 }
 
-export const broadcast = (room: Room, message: ServerMessage, exclude?: InternalWebSocket) => {
+export const startGame = (code: string): Result<void, RoomError> => {
+  const isValidCode = isValidRoomCode(code)
+  if (!isValidCode) {
+    return err(RoomError.InvalidRoomCode)
+  }
+
+  const room = getRoom(code)
+  if (!room) {
+    return err(RoomError.RoomNotFound)
+  }
+
+  // eslint-disable-next-line ts/no-use-before-define
+  roomBroadcast(room, { type: 'game_started' })
+  return ok()
+}
+
+export const roomBroadcast = (room: Room, message: ServerMessage, exclude?: InternalWebSocket) => {
   const data = JSON.stringify(message)
   for (const player of room.players.values()) {
     if (player.ws !== exclude) {
@@ -103,22 +126,19 @@ export const broadcast = (room: Room, message: ServerMessage, exclude?: Internal
   }
 }
 
-// Stats for monitoring
 export const getStats = () => ({
   activeRooms: rooms.size,
   totalPlayers: playerRooms.size
 })
 
-// For cleanup
 export const getAllRooms = (): IterableIterator<Room> => rooms.values()
 
-export const deleteRoom = (code: string): boolean => {
+export const deleteRoom = (code: RoomCode): boolean => {
   const room = rooms.get(code)
   if (!room) {
     return false
   }
 
-  // Clean up player references
   for (const ws of room.players.keys()) {
     playerRooms.delete(ws)
   }

@@ -8,6 +8,7 @@ const CONTEXT_KEY = Symbol.for('global:state')
 type AppState = {
   connection: GameConnection | null
   user: {
+    hasGameStarted: boolean
     playerName: string
     room: string
   } | null
@@ -30,34 +31,63 @@ export const getAppContext = () => {
 }
 
 type CreateRoomAndConnectOptions = {
+  playerName: string
   onError?: () => void
   onSuccess?: () => void
+  room?: string
 }
-export const createRoomAndConnect = async (playerName: string, options: CreateRoomAndConnectOptions = {}) => {
+export const connectToRoom = async (options: CreateRoomAndConnectOptions) => {
   appState.connection = new GameConnection({
+    onClose: () => {
+      goto('/')
+    },
+    onConnect: () => {
+      if (!options.room) {
+        appState.connection!.createRoom(options.playerName)
+      } else {
+        appState.connection!.joinRoom(options.room, options.playerName)
+      }
+    },
     onError: () => {
       options.onError?.()
     },
+    onGameStarted: () => {
+      if (!appState.user) {
+        return
+      }
+
+      appState.user = { ...appState.user!, hasGameStarted: true }
+    },
     onRoomCreated: (response) => {
       appState.user = {
-        playerName,
+        hasGameStarted: false,
+        playerName: options.playerName,
+        room: response
+      }
+      options.onSuccess?.()
+      goto(`/game/${response}`)
+    },
+    onRoomJoined: (response) => {
+      appState.user = {
+        hasGameStarted: false,
+        playerName: options.playerName,
         room: response
       }
       options.onSuccess?.()
       goto(`/game/${response}`)
     }
   })
-
-  if (!appState.connection) {
-    return
-  }
-
-  setTimeout(() => {
-    appState.connection!.createRoom(playerName)
-  }, 250)
 }
 
 export const disconnectFromRoom = () => {
   appState.connection?.close()
   goto('/')
+}
+
+export const startGame = () => {
+  if (!appState.user || !appState.connection) {
+    return
+  }
+
+  appState.connection.startGame(appState.user.room)
 }

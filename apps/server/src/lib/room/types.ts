@@ -1,8 +1,16 @@
 import type { ServerWebSocket } from 'bun'
 
+import type { RoomCode } from './code'
+
 import * as v from 'valibot'
 
-export type RoomState = 'finished' | 'lobby' | 'playing'
+import { RoomCodeSchema } from './code'
+
+export enum RoomState {
+  Finished,
+  Lobby,
+  Playing
+}
 
 export const ServerMessageSchema = v.variant('type', [
   v.object({
@@ -18,19 +26,25 @@ export const ServerMessageSchema = v.variant('type', [
     type: v.literal('player_left')
   }),
   v.object({
-    code: v.string(),
+    code: RoomCodeSchema,
     players: v.array(v.string()),
     type: v.literal('room_joined')
   }),
   v.object({
-    code: v.string(),
+    code: RoomCodeSchema,
     type: v.literal('room_created')
-  })
+  }),
+  v.object({ type: v.literal('game_started') })
 ])
 
 export type ServerMessage = v.InferOutput<typeof ServerMessageSchema>
 
-export type RoomError = 'GAME_IN_PROGRESS' | 'INVALID_MESSAGE' | 'ROOM_NOT_FOUND'
+export enum RoomError {
+  GameInProgress,
+  InvalidMessage,
+  RoomNotFound,
+  InvalidRoomCode
+}
 
 export type InternalWebSocket = ServerWebSocket<unknown>
 
@@ -44,7 +58,7 @@ export type Room = {
   lastActivity: number
   players: Map<InternalWebSocket, Player>
   state: RoomState
-  code: string
+  code: RoomCode
   host: InternalWebSocket
 }
 
