@@ -18,7 +18,7 @@ export const createRoomMessage: MessageBuilder<CreateRoomMessage> = ({ playerNam
 })
 
 export const joinRoomMessage: MessageBuilder<JoinRoomMessage> = ({ code, playerName }) => ({
-  code,
+  code: code.toUpperCase(),
   playerName,
   type: 'join_room'
 })

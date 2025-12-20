@@ -32,7 +32,7 @@ export class GameConnection {
     })
 
     this.ws.addEventListener('message', (event) => {
-      console.log('WebSocket message received')
+      console.log('WebSocket message received', event)
       if (!event.data) {
         return
       }
@@ -100,8 +100,7 @@ export class GameConnection {
       return
     }
 
-    const message = joinRoomMessage({ code, playerName })
-    this.ws.send(JSON.stringify(message))
+    this.ws.send(JSON.stringify(joinRoomMessage({ code, playerName })))
   }
 
   startGame(code: string) {

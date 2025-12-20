@@ -2,6 +2,7 @@
     import { LoaderCircleIcon, LogInIcon, SparklesIcon } from '@lucide/svelte'
     import { cn } from 'tailwind-variants'
 
+    import { onNavigate } from '$app/navigation'
     import Button from '$lib/components/button.svelte'
     import Input from '$lib/components/input.svelte'
     import Logo from '$lib/components/logo.svelte'
@@ -46,8 +47,10 @@
         })
     }
 
-    $effect(() => () => {
-        closeConnection()
+    onNavigate(({ to }) => {
+        if (!to?.route.id?.startsWith('/game')) {
+            closeConnection()
+        }
     })
 </script>
 

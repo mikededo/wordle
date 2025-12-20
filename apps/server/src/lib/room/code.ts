@@ -4,7 +4,7 @@ const ALPHABET = 'ABCDEFGHJKMNPQRTUVWXYZ2346789'
 const CODE_LENGTH = 5
 const MAX_ATTEMPTS = 100
 
-export const RoomCodeSchema = v.pipe(v.string(), v.length(5), v.brand('RoomCode'))
+export const RoomCodeSchema = v.pipe(v.string(), v.length(5), v.toUpperCase(), v.brand('RoomCode'))
 export type RoomCode = v.InferOutput<typeof RoomCodeSchema>
 
 export const generateCode = (existingCodes: Set<string>): RoomCode => {
