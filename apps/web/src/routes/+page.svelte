@@ -5,14 +5,12 @@
     import Button from '$lib/components/button.svelte'
     import Input from '$lib/components/input.svelte'
     import Logo from '$lib/components/logo.svelte'
-    import { connectToRoom } from '$lib/context/state.svelte'
-    import { GameConnection } from '$lib/service'
+    import { closeConnection, connectToRoom } from '$lib/context/state.svelte'
 
     let view = $state<'create' | 'join' | null>('create')
     let formContainerHeight = $state<'auto' | number>('auto')
 
     let loading = $state(false)
-    const connection = $state<GameConnection | null>(null)
 
     let name = $state<string>('')
     let code = $state<string>('')
@@ -49,7 +47,7 @@
     }
 
     $effect(() => () => {
-        connection?.close()
+        closeConnection()
     })
 </script>
 

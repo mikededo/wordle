@@ -91,3 +91,7 @@ export const startGame = () => {
 
   appState.connection.startGame(appState.user.room)
 }
+
+export const closeConnection = () => {
+  appState.connection?.close()
+}
