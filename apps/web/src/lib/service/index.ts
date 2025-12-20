@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
-import type { CreateRoomMessage, JoinRoomMessage, ServerMessage, StartGameMessage } from '@wordle/server'
+import type { ServerMessage } from '@wordle/server'
 
 import { ServerMessageSchema } from '@wordle/server'
 import { fromThrowable } from 'neverthrow'
 import * as v from 'valibot'
+
+import { createRoomMessage, joinRoomMessage, startGameMessage } from './messages'
 
 const safeJSONParse = fromThrowable(JSON.parse)
 
@@ -89,10 +91,7 @@ export class GameConnection {
       return
     }
 
-    const message: CreateRoomMessage = {
-      playerName,
-      type: 'create_room'
-    }
+    const message = createRoomMessage({ playerName })
     this.ws.send(JSON.stringify(message))
   }
 
@@ -101,11 +100,7 @@ export class GameConnection {
       return
     }
 
-    const message: JoinRoomMessage = {
-      code,
-      playerName,
-      type: 'join_room'
-    }
+    const message = joinRoomMessage({ code, playerName })
     this.ws.send(JSON.stringify(message))
   }
 
@@ -114,10 +109,7 @@ export class GameConnection {
       return
     }
 
-    const message: StartGameMessage = {
-      room: code,
-      type: 'start_game'
-    }
+    const message = startGameMessage({ room: code })
     this.ws.send(JSON.stringify(message))
   }
 }
