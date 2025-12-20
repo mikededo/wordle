@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import * as v from 'valibot'
 
+import { RoomCodeSchema } from './code'
 import {
   createRoom,
   deleteRoom,
@@ -9,6 +11,7 @@ import {
   leaveRoom,
   resetState
 } from './manager'
+import { RoomError, RoomState } from './types'
 
 const createMockWs = () => ({
   close: mock(() => {}),
@@ -59,7 +62,7 @@ describe('room manager', () => {
 
       result.map((code) => {
         const room = getRoom(code)
-        expect(room?.state).toBe('lobby')
+        expect(room?.state).toBe(RoomState.Lobby)
       })
     })
 
@@ -96,7 +99,7 @@ describe('room manager', () => {
 
       expect(result.isErr()).toBe(true)
       result.mapErr((error) => {
-        expect(error).toBe('ROOM_NOT_FOUND')
+        expect(error).toBe(RoomError.RoomNotFound)
       })
     })
 
@@ -107,15 +110,14 @@ describe('room manager', () => {
       const createResult = createRoom(host, 'Alice')
       const code = createResult._unsafeUnwrap()
 
-      // Manually set state to playing
       const room = getRoom(code)!
-      room.state = 'playing'
+      room.state = RoomState.Playing
 
       const joinResult = joinRoom(player, code, 'Bob')
 
       expect(joinResult.isErr()).toBe(true)
       joinResult.mapErr((error) => {
-        expect(error).toBe('GAME_IN_PROGRESS')
+        expect(error).toBe(RoomError.GameInProgress)
       })
     })
 
@@ -221,8 +223,7 @@ describe('room manager', () => {
     })
 
     test('returns false for non-existent room', () => {
-      const deleted = deleteRoom('XXXXX')
-      expect(deleted).toBe(false)
+      expect(deleteRoom(v.parse(RoomCodeSchema, 'XXXXX'))).toBe(false)
     })
 
     test('cleans up player references', () => {
