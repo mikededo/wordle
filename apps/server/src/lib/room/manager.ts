@@ -5,6 +5,7 @@ import type { InternalWebSocket, Player, Room, ServerMessage } from '$lib/room/t
 
 import { err, ok } from 'neverthrow'
 
+import { initializeGame } from '$lib/game/handler'
 import { generateCode, isValidRoomCode } from '$lib/room/code'
 import { RoomError, RoomState } from '$lib/room/types'
 
@@ -14,6 +15,14 @@ const playerRooms = new Map<InternalWebSocket, RoomCode>()
 const getRoomCodes = (): Set<RoomCode> => new Set(rooms.keys())
 
 export const getRoom = (code: string): Room | undefined => isValidRoomCode(code) ? rooms.get(code) : undefined
+
+export const getRoomByWebSocket = (ws: InternalWebSocket): Room | undefined => {
+  const code = playerRooms.get(ws)
+  if (!code) {
+    return undefined
+  }
+  return rooms.get(code)
+}
 
 const updateActivity = (room: Room) => {
   room.lastActivity = Date.now()
@@ -26,6 +35,7 @@ export const createRoom = (ws: InternalWebSocket, playerName: string): Result<Ro
   const room: Room = {
     code,
     createdAt: now,
+    game: null,
     host: ws,
     lastActivity: now,
     players: new Map([[ws, { name: playerName, ws }]]),
@@ -112,8 +122,13 @@ export const startGame = (code: string): Result<void, RoomError> => {
     return err(RoomError.RoomNotFound)
   }
 
+  if (room.state !== RoomState.Lobby) {
+    return err(RoomError.GameInProgress)
+  }
+
   // eslint-disable-next-line ts/no-use-before-define
   roomBroadcast(room, { type: 'game_started' })
+  initializeGame(room)
   return ok()
 }
 
@@ -137,6 +152,11 @@ export const deleteRoom = (code: RoomCode): boolean => {
   const room = rooms.get(code)
   if (!room) {
     return false
+  }
+
+  // Clear game timer if exists
+  if (room.game?.roundTimeoutId) {
+    clearTimeout(room.game.roundTimeoutId)
   }
 
   for (const ws of room.players.keys()) {

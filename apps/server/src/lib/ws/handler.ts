@@ -6,9 +6,18 @@ import type { InternalWebSocket, ServerMessage } from '$lib/room/types'
 import { err, ok } from 'neverthrow'
 import * as v from 'valibot'
 
-import { createRoom, getRoom, joinRoom, leaveRoom, roomBroadcast, startGame } from '$lib/room/manager'
+import { submitAnswer } from '$lib/game/handler'
+import {
+  createRoom,
+  getRoom,
+  getRoomByWebSocket,
+  joinRoom,
+  leaveRoom,
+  roomBroadcast,
+  startGame
+} from '$lib/room/manager'
 import { ClientMessageSchema } from '$lib/room/schemas'
-import { RoomError } from '$lib/room/types'
+import { GameError, RoomError } from '$lib/room/types'
 
 const send = (ws: InternalWebSocket, message: ServerMessage) => {
   ws.send(JSON.stringify(message))
@@ -29,8 +38,18 @@ const parseMessage = (data: string): Result<ClientMessage, RoomError> => {
   }
 }
 
-const errorMessage = (error: RoomError): string => {
+const errorMessage = (error: GameError | RoomError): string => {
   switch (error) {
+    case GameError.AlreadySubmitted:
+      return 'You have already submitted an answer for this round'
+    case GameError.GameNotStarted:
+      return 'Game has not started'
+    case GameError.InvalidAnswer:
+      return 'Invalid answer format'
+    case GameError.NotYourTurn:
+      return 'You are not in this room'
+    case GameError.RoundEnded:
+      return 'Round has ended'
     case RoomError.GameInProgress:
       return 'Game already in progress'
     case RoomError.InvalidMessage:
@@ -71,6 +90,21 @@ export const handleMessage = (ws: InternalWebSocket, data: string) => {
 
         case 'start_game':
           return startGame(message.room)
+
+        case 'submit_answer': {
+          const room = getRoomByWebSocket(ws)
+          if (!room) {
+            return err(RoomError.RoomNotFound)
+          }
+
+          return submitAnswer(ws, room, message.answer).map(() =>
+            // Answer result is sent directly in submitAnswer function
+            null
+          )
+        }
+        default: {
+          return err(RoomError.InvalidMessage)
+        }
       }
     })
     .mapErr((error) => {

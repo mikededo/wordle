@@ -19,7 +19,7 @@ const runCleanup = () => {
       : timeSinceActivity > STALE_ROOM_THRESHOLD_MS
 
     if (!shouldClean) {
-      return
+      continue
     }
 
     if (!isEmpty) {
@@ -39,7 +39,7 @@ const runCleanup = () => {
 
   if (cleanedCount > 0) {
     const stats = getStats()
-    console.log(
+    console.warn(
       `[Cleanup] Removed ${cleanedCount} stale rooms. Active: ${stats.activeRooms} rooms, ${stats.totalPlayers} players`
     )
   }
@@ -51,14 +51,14 @@ export const startCleanup = () => {
   }
 
   cleanupTimer = setInterval(runCleanup, CLEANUP_INTERVAL_MS)
-  console.log('[Cleanup] Started room cleanup scheduler')
+  console.warn('[Cleanup] Started room cleanup scheduler')
 }
 
 export const stopCleanup = () => {
   if (cleanupTimer) {
     clearInterval(cleanupTimer)
     cleanupTimer = null
-    console.log('[Cleanup] Stopped room cleanup scheduler')
+    console.warn('[Cleanup] Stopped room cleanup scheduler')
   }
 }
 

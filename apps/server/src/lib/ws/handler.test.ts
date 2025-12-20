@@ -1,5 +1,6 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { afterEach, describe, expect, mock, test } from 'bun:test'
 
+import { resetState } from '$lib/room/manager'
 import { handleClose, handleMessage } from '$lib/ws/handler'
 
 const createMockWs = () => {
@@ -19,6 +20,10 @@ const parseLastMessage = (ws: ReturnType<typeof createMockWs>) => {
 }
 
 describe('WebSocket handler', () => {
+  afterEach(() => {
+    resetState()
+  })
+
   describe('handleMessage', () => {
     describe('create_room', () => {
       test('creates room and sends room_created', () => {
@@ -36,9 +41,11 @@ describe('WebSocket handler', () => {
 
         handleMessage(ws, JSON.stringify({ playerName: '', type: 'create_room' }))
 
+        expect(ws.messages.length).toBeGreaterThan(0)
         const response = parseLastMessage(ws)
-        expect(response.type).toBe('error')
-        expect(response.message).toBe('Invalid message format')
+        expect(response).not.toBeNull()
+        expect(response?.type).toBe('error')
+        expect(response?.message).toBe('Invalid message format')
       })
 
       test('rejects player name over 20 chars', () => {
@@ -76,13 +83,12 @@ describe('WebSocket handler', () => {
 
         handleMessage(player, JSON.stringify({ code, playerName: 'Bob', type: 'join_room' }))
 
-        // Host should receive player_joined
         const hostResponse = parseLastMessage(host)
         expect(hostResponse.type).toBe('player_joined')
         expect(hostResponse.playerName).toBe('Bob')
       })
 
-      test('returns error for invalid room code', () => {
+      test('returns error for non-existent room code', () => {
         const ws = createMockWs()
 
         handleMessage(ws, JSON.stringify({ code: 'XXXXX', playerName: 'Bob', type: 'join_room' }))
@@ -99,7 +105,7 @@ describe('WebSocket handler', () => {
 
         const response = parseLastMessage(ws)
         expect(response.type).toBe('error')
-        expect(response.message).toBe('Invalid message format')
+        expect(response.message).toBe('Room not found')
       })
     })
 
@@ -114,7 +120,6 @@ describe('WebSocket handler', () => {
         handleMessage(player, JSON.stringify({ code, playerName: 'Bob', type: 'join_room' }))
         handleMessage(player, JSON.stringify({ type: 'leave_room' }))
 
-        // Host should receive player_left
         const hostResponse = parseLastMessage(host)
         expect(hostResponse.type).toBe('player_left')
         expect(hostResponse.playerName).toBe('Bob')
@@ -123,10 +128,8 @@ describe('WebSocket handler', () => {
       test('no error when leaving without being in room', () => {
         const ws = createMockWs()
 
-        // Should not throw
         handleMessage(ws, JSON.stringify({ type: 'leave_room' }))
 
-        // No message sent
         expect(ws.messages).toHaveLength(0)
       })
     })
@@ -172,12 +175,10 @@ describe('WebSocket handler', () => {
 
       handleMessage(player, JSON.stringify({ code, playerName: 'Bob', type: 'join_room' }))
 
-      // Clear previous messages
       host.messages.length = 0
 
       handleClose(player)
 
-      // Host should receive player_left
       const hostResponse = parseLastMessage(host)
       expect(hostResponse.type).toBe('player_left')
       expect(hostResponse.playerName).toBe('Bob')
@@ -186,12 +187,10 @@ describe('WebSocket handler', () => {
     test('no error when disconnecting without being in room', () => {
       const ws = createMockWs()
 
-      // Should not throw
       handleClose(ws)
 
       expect(ws.messages).toHaveLength(0)
     })
   })
 })
-
 

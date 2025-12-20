@@ -21,6 +21,12 @@ export const StartGameSchema = v.object({
 })
 export type StartGameMessage = v.InferOutput<typeof StartGameSchema>
 
+export const SubmitAnswerSchema = v.object({
+  answer: v.pipe(v.string(), v.length(5)),
+  type: v.literal('submit_answer')
+})
+export type SubmitAnswerMessage = v.InferOutput<typeof SubmitAnswerSchema>
+
 export const LeaveRoomSchema = v.object({ type: v.literal('leave_room') })
 export type LeaveRoomMessage = v.InferOutput<typeof LeaveRoomSchema>
 
@@ -28,6 +34,7 @@ export const ClientMessageSchema = v.variant('type', [
   CreateRoomSchema,
   JoinRoomSchema,
   LeaveRoomSchema,
-  StartGameSchema
+  StartGameSchema,
+  SubmitAnswerSchema
 ])
 export type ClientMessage = v.InferOutput<typeof ClientMessageSchema>

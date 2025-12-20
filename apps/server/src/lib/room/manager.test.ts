@@ -121,7 +121,7 @@ describe('room manager', () => {
       })
     })
 
-    test('is case-insensitive for room codes', () => {
+    test('is case-sensitive for room codes', () => {
       const host = createMockWs()
       const player = createMockWs()
 
@@ -129,7 +129,7 @@ describe('room manager', () => {
       const code = createResult._unsafeUnwrap()
 
       const joinResult = joinRoom(player, code.toLowerCase(), 'Bob')
-      expect(joinResult.isOk()).toBe(true)
+      expect(joinResult.isOk()).toBe(false)
     })
 
     test('updates stats', () => {

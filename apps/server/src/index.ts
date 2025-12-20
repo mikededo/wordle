@@ -19,6 +19,9 @@ const server = Bun.serve({
     },
     message(ws, data) {
       handleMessage(ws, data.toString())
+    },
+    open(ws) {
+      Logger.log('WebSocket connection opened', ws.remoteAddress)
     }
   }
 })
