@@ -5,7 +5,9 @@
   "workspaces": ["apps/*"],
   "scripts": {
     "lint": "eslint .",
-    "dev": "bun run -F '*' dev"
+    "dev": "bun run -F '*' dev",
+    "test": "bun run -F '*' test",
+    "typecheck": "bun run -F '*' typecheck"
   },
   "dependencies": {
     "eslint": "^9.39.2"
