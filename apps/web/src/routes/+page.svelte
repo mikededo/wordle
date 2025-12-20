@@ -1,5 +1,6 @@
 <script lang="ts">
     import { LoaderCircleIcon, LogInIcon, SparklesIcon } from '@lucide/svelte'
+    import { cn } from 'tailwind-variants'
 
     import Button from '$lib/components/button.svelte'
     import Input from '$lib/components/input.svelte'
@@ -57,7 +58,9 @@
         <Logo />
         <p class="text-slate-700">Challenge your friends at Wordle!</p>
     </div>
-    <div class="border-secondary/60 border-3 w-full space-y-6 rounded-xl bg-white p-4">
+    <div
+        class={cn('border-primary/60 border-3 w-full space-y-6 rounded-xl bg-white p-4 transition-colors duration-150', view === 'join' && 'border-secondary/60')}
+    >
         <div class="p-0.75 group relative flex items-center gap-2 rounded-lg bg-slate-200" data-active={view}>
             <div
                 class="absolute inset-y-1 left-1 right-1/2 rounded-md bg-white transition-all duration-200 ease-out group-data-[active=join]:left-1/2 group-data-[active=join]:right-1"
@@ -111,6 +114,7 @@
                             bind:value={name}
                             id="name"
                             placeholder="Pedri"
+                            variant="secondary"
                         />
                     </div>
                     <div class="flex w-full flex-col items-start gap-1">
@@ -121,6 +125,7 @@
                             id="code"
                             maxlength={5}
                             placeholder="XXXXX"
+                            variant="secondary"
                         />
                     </div>
                     <Button
