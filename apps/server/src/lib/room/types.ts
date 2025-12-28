@@ -1,9 +1,12 @@
 import type { ServerWebSocket } from 'bun'
 
+import type { GameState } from '$lib/game/types'
+
 import type { RoomCode } from './code'
 
 import * as v from 'valibot'
 
+import { LetterResult } from '../game/types'
 import { RoomCodeSchema } from './code'
 
 export enum RoomState {
@@ -42,11 +45,12 @@ export const ServerMessageSchema = v.variant('type', [
   }),
   v.object({
     isCorrect: v.boolean(),
-    result: v.array(v.picklist(['correct', 'present', 'absent'])),
+    result: v.array(v.enum(LetterResult)),
     type: v.literal('answer_result')
   }),
   v.object({
     playerName: v.string(),
+    submission: v.array(v.enum(LetterResult)),
     type: v.literal('player_submitted')
   }),
   v.object({
@@ -89,32 +93,6 @@ export type InternalWebSocket = ServerWebSocket<unknown>
 export type Player = {
   name: string
   ws: InternalWebSocket
-}
-
-export const AnswerSchema = v.pipe(v.string(), v.regex(/[a-z]+/i), v.length(5), v.toUpperCase(), v.brand('Answer'))
-export type Answer = v.InferOutput<typeof AnswerSchema>
-export type AnswerResult = {
-  result: LetterResult[]
-  isCorrect: boolean
-}
-
-export type LetterResult = 'absent' | 'correct' | 'present'
-export type RoundSubmission = {
-  result: LetterResult[]
-  submittedAt: number
-  round: number
-  word: string
-}
-
-export type GameState = {
-  winner: null | string
-  currentRound: number
-  maxRounds: number
-  roundStartedAt: number
-  roundTimeoutId: null | Timer
-  scores: Map<string, number>
-  submissions: Map<string, RoundSubmission[]>
-  targetWord: string
 }
 
 export type Room = {

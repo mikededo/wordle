@@ -1,20 +1,19 @@
 import type { Result } from 'neverthrow'
 
 import type {
-  Answer,
-  AnswerResult,
-  GameState,
   InternalWebSocket,
-  LetterResult,
-  Room,
-  RoundSubmission
+  Room
 } from '$lib/room/types'
+
+import type { Answer, AnswerResult, GameState, RoundSubmission } from './types'
 
 import { err, ok } from 'neverthrow'
 import * as v from 'valibot'
 
 import { roomBroadcast } from '$lib/room/manager'
-import { AnswerSchema, GameError, RoomState } from '$lib/room/types'
+import { GameError, RoomState } from '$lib/room/types'
+
+import { AnswerSchema, LetterResult } from './types'
 
 const WORD_LIST = [
   'HELLO',
@@ -65,14 +64,13 @@ const WORD_LIST = [
   'SMILE',
   'HAPPY',
   'PEACE',
-  'LOVE',
   'HOPES'
 ]
 
 const getRandomWord = (): string => WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]!
 
 export const initializeGame = (room: Room): void => {
-  const targetWord = getRandomWord()
+  const targetWord = import.meta.env.PLAYWRIGHT_TEST === '1' ? 'WORDS' : getRandomWord()
   const now = Date.now()
 
   const gameState: GameState = {
@@ -114,12 +112,12 @@ export const computeResult = (guess: Answer, target: string): AnswerResult => {
         targetChars[i] = ''
         return {
           correctCount: result.correctCount + 1,
-          result: [...result.result, 'correct']
+          result: [...result.result, LetterResult.Correct]
         }
       }
 
       const index = targetChars.indexOf(char)
-      const letterResult: LetterResult = index !== -1 ? 'present' : 'absent'
+      const letterResult: LetterResult = index !== -1 ? LetterResult.Present : LetterResult.Absent
       if (index !== -1) {
         targetChars[index] = ''
       }
@@ -152,7 +150,7 @@ export const endRound = (room: Room): void => {
     winner: game.winner
   })
 
-  if (game.currentRound < game.maxRounds) {
+  if (game.currentRound < game.maxRounds && !game.winner) {
     game.currentRound += 1
     game.winner = null
     game.roundStartedAt = Date.now()
@@ -169,6 +167,7 @@ export const endRound = (room: Room): void => {
     return
   }
 
+  room.state = RoomState.Finished
   const scores: Record<string, number> = game.scores
     .entries()
     .reduce((agg, [name, score]) => ({ ...agg, [name]: score }), {})
@@ -225,7 +224,7 @@ export const submitAnswer = (
 
   ws.send(JSON.stringify({ isCorrect, result, type: 'answer_result' }))
 
-  roomBroadcast(room, { playerName, type: 'player_submitted' }, ws)
+  roomBroadcast(room, { playerName, submission: result, type: 'player_submitted' }, ws)
 
   if (isCorrect) {
     game.winner = playerName

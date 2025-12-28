@@ -71,7 +71,7 @@
                 onclick={setView('create')}
                 data-active={view === 'create'}
             >
-                Create room
+                New room
             </Button>
             <Button
                 class="z-1 w-full bg-transparent py-1.5 focus:scale-100 active:scale-100"
@@ -135,7 +135,7 @@
                         variant="secondary"
                         onclick={joinRoom}
                     >
-                        <span>Join room</span>
+                        <span>Join game</span>
                         <LogInIcon />
                     </Button>
                 {/if}

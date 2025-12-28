@@ -2,11 +2,15 @@ import { startCleanup } from '$lib/room/cleanup'
 import { getStats } from '$lib/room/manager'
 import { handleClose, handleMessage } from '$lib/ws/handler'
 
-const PORT = Bun.env.PORT ? Number.parseInt(Bun.env.PORT, 10) : 3001
+const PORT = Bun.env.PORT ? Number.parseInt(Bun.env.PORT, 10) : 3000
 const Logger = console
 
 const server = Bun.serve({
   fetch(req, server) {
+    if (new URL(req.url).pathname === '/health') {
+      return new Response(null, { status: 200 })
+    }
+
     if (server.upgrade(req)) {
       return
     }
@@ -35,4 +39,4 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000)
 
-Logger.log(`WebSocket server running on ws://localhost:${server.port}`)
+Logger.log(`Server running on localhost:${server.port}`)

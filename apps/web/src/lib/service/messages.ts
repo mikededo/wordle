@@ -3,7 +3,8 @@ import type {
   CreateRoomMessage,
   JoinRoomMessage,
   LeaveRoomMessage,
-  StartGameMessage
+  StartGameMessage,
+  SubmitAnswerMessage
 } from '@wordle/server'
 
 type MessageArgs<T extends ClientMessage> = Omit<T, 'type'>
@@ -30,4 +31,9 @@ export const startGameMessage: MessageBuilder<StartGameMessage> = ({ room }) => 
 
 export const leaveRoomMessage: MessageBuilder<LeaveRoomMessage> = () => ({
   type: 'leave_room'
+})
+
+export const submitAnswerMessage: MessageBuilder<SubmitAnswerMessage> = ({ answer }) => ({
+  answer: answer.toUpperCase(),
+  type: 'submit_answer'
 })

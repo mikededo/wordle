@@ -122,7 +122,7 @@ export const startGame = (code: string): Result<void, RoomError> => {
     return err(RoomError.RoomNotFound)
   }
 
-  if (room.state !== RoomState.Lobby) {
+  if (room.state === RoomState.Playing) {
     return err(RoomError.GameInProgress)
   }
 
