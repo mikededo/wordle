@@ -7,7 +7,7 @@
     const { room }: Props = $props()
 </script>
 
-<Dialog testId="pregame-dialog">
+<Dialog id="pregame-dialog">
     {#snippet title()}
         Game hasn't started yet
     {/snippet}

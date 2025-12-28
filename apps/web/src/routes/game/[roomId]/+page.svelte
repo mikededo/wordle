@@ -51,19 +51,7 @@
     }
 </script>
 
-{#if appState.user}
-    {#if !appState.game?.isGameStarted}
-        <PregameDialog room={data.roomId} />
-    {/if}
-    {#if appState.game?.winner}
-        <EndgameDialog
-            solution={appState.game.correctWord ?? ''}
-            winner={appState.game.gameWinner}
-        />
-    {/if}
-{/if}
-
-<div class="flex h-dvh w-dvw flex-col" data-app-root>
+<div class="flex h-dvh w-dvw flex-col" id="game-root">
     <header class="flex h-12 shrink-0 items-center justify-between border-b border-slate-200 px-4">
         <p class="text-sm font-medium">{appState.user?.playerName} | {data.roomId}</p>
         <Button size="sm" variant="muted" onclick={onDisconnect}>Disconnect</Button>
@@ -90,3 +78,15 @@
 
     <Keyboard {disabledKeys} {onKeypress} />
 </div>
+
+{#if appState.user}
+    {#if !appState.game?.isGameStarted}
+        <PregameDialog room={data.roomId} />
+    {/if}
+    {#if appState.game?.winner}
+        <EndgameDialog
+            solution={appState.game.correctWord ?? ''}
+            winner={appState.game.gameWinner}
+        />
+    {/if}
+{/if}

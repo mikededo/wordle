@@ -10,7 +10,7 @@
     const { solution, winner }: Props = $props()
 </script>
 
-<Dialog testId="endgame-dialog" transitionDelay={250}>
+<Dialog id="endgame-dialog" transitionDelay={250}>
     {#snippet title()}
         {#if winner}
             {winner} has won!

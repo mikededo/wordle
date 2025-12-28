@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte'
+    import type { HTMLAttributes, KeyboardEventHandler } from 'svelte/elements'
 
     import { fade } from 'svelte/transition'
 
@@ -9,14 +10,21 @@
         children: Snippet
         title: Snippet
         description: Snippet
-        testId?: string
         transitionDelay?: number
-    }
-    const { children, description, testId, title, transitionDelay = 0 }: Props = $props()
+    } & HTMLAttributes<HTMLDivElement>
+    const {
+        children,
+        description,
+        id,
+        title,
+        transitionDelay = 0,
+        ...props
+    }: Props = $props()
 
     let dialogElement: HTMLDivElement | null = $state(null)
 
-    const handleKeydown = (event: KeyboardEvent) => {
+    const onKeydown: KeyboardEventHandler<HTMLDivElement> = (event) => {
+        props.onkeydown?.(event)
         if (!dialogElement || event.key !== 'Tab') {
             return
         }
@@ -50,7 +58,7 @@
         }
 
         const previousActiveEl = document.activeElement as HTMLElement | null
-        const backgroundEl = document.querySelector<HTMLElement>('[data-app-root]')
+        const backgroundEl = document.getElementById('app-root')
 
         backgroundEl?.setAttribute('inert', '')
         backgroundEl?.setAttribute('aria-hidden', 'true')
@@ -69,25 +77,25 @@
     in:fade={{ delay: transitionDelay, duration: 150 }}
     out:fade={{ duration: 150 }}
     aria-hidden="true"
-    data-testid={testId ? `${testId}-overlay` : undefined}
+    data-testid={id ? `${id}-overlay` : undefined}
 ></div>
 <div
+    {...props}
     class="fixed left-1/2 top-1/2 z-50 flex min-w-80 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 rounded-lg bg-white p-4"
     bind:this={dialogElement}
     role="dialog"
     tabindex="-1"
     in:fade={{ delay: transitionDelay, duration: 150 }}
     out:fade={{ duration: 150 }}
-    onkeydown={handleKeydown}
-    aria-describedby={testId ? `${testId}-description` : undefined}
-    aria-labelledby={testId ? `${testId}-title` : undefined}
+    onkeydown={onKeydown}
+    aria-describedby={id ? `${id}-description` : undefined}
+    aria-labelledby={id ? `${id}-title` : undefined}
     aria-modal="true"
-    data-testid={testId}
 >
-    <p class="w-full text-center text-lg font-semibold" id={testId ? `${testId}-title` : undefined}>
+    <p class="w-full text-center text-lg font-semibold" id={id ? `${id}-title` : undefined}>
         {@render title()}
     </p>
-    <p class="w-full text-center" id={testId ? `${testId}-description` : undefined}>
+    <p class="w-full text-center" id={id ? `${id}-description` : undefined}>
         {@render description()}
     </p>
     <div class="mt-2 flex w-full items-center gap-2">
