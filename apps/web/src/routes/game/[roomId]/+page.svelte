@@ -63,7 +63,7 @@
     {/if}
 {/if}
 
-<div class="flex h-dvh w-dvw flex-col">
+<div class="flex h-dvh w-dvw flex-col" data-app-root>
     <header class="flex h-12 shrink-0 items-center justify-between border-b border-slate-200 px-4">
         <p class="text-sm font-medium">{appState.user?.playerName} | {data.roomId}</p>
         <Button size="sm" variant="muted" onclick={onDisconnect}>Disconnect</Button>

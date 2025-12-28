@@ -45,14 +45,12 @@ for (const count of [2, 3, 4]) {
         ])
       }
 
-      creator.gameFinishedWithWinner(creator.name)
-      players.forEach((player) => {
-        player.gameFinishedWithWinner(creator.name)
-      })
+      await creator.gameFinishedWithWinner(creator.name)
+      await Promise.all(players.map((player) => player.gameFinishedWithWinner(creator.name)))
     })
 
     test('in less than 5 tries', async ({ browser }) => {
-      const creator = new Creator(PLAYERS[0], WINNER_GUESS.slice(2))
+      const creator = new Creator(PLAYERS[0], WINNER_GUESS.slice(3))
       const player = new GamePlayer(PLAYERS[1], PLAYER_GUESSES[0])
 
       const gameCode = await creator.createRoom(browser)
@@ -78,8 +76,8 @@ for (const count of [2, 3, 4]) {
         ])
       }
 
-      creator.gameFinishedWithWinner(creator.name)
-      player.gameFinishedWithWinner(creator.name)
+      await creator.gameFinishedWithWinner(creator.name)
+      await player.gameFinishedWithWinner(creator.name)
     })
   })
 }

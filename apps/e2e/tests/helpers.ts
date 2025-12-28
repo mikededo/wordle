@@ -2,10 +2,12 @@ import type { Browser, Page } from '@playwright/test'
 
 import { expect } from '@playwright/test'
 
-const PREGAME_DIALOG_TEXT = `Game hasn't started yet`
 const PLAYERS_LABEL_TEXT = 'Players:'
 const SOLUTION_TEXT = 'The solution was WORDS'
 const GAME_OVER_TEXT = 'Game over!'
+
+const PREGAME_DIALOG = 'pregame-dialog'
+const ENDGAME_DIALOG = 'endgame-dialog'
 
 export class GamePlayer {
   get name() {
@@ -31,24 +33,26 @@ export class GamePlayer {
     await this.page.getByRole('button', { name: 'Disconnect' }).click()
   }
 
-  public expectPlayerHidden(playerName: string) {
+  public async expectPlayerHidden(playerName: string) {
     const playerList = this.page.getByText(PLAYERS_LABEL_TEXT, { exact: true }).locator('..')
-    expect(playerList.getByText(playerName, { exact: true })).toBeHidden()
+    await expect(playerList.getByText(playerName, { exact: true })).toBeHidden()
   }
 
-  public expectPlayerVisible(playerName: string) {
+  public async expectPlayerVisible(playerName: string) {
     const playerList = this.page.getByText(PLAYERS_LABEL_TEXT, { exact: true }).locator('..')
-    expect(playerList.getByText(playerName, { exact: true })).toBeVisible()
+    await expect(playerList.getByText(playerName, { exact: true })).toBeVisible()
   }
 
-  public gameFinishedNoWinner() {
-    expect(this.page.getByText(GAME_OVER_TEXT)).toBeVisible()
-    expect(this.page.getByText(SOLUTION_TEXT)).toBeVisible()
+  public async gameFinishedNoWinner() {
+    const dialog = this.page.getByTestId(ENDGAME_DIALOG)
+    await expect(dialog.getByText(GAME_OVER_TEXT)).toBeVisible()
+    await expect(dialog.getByText(SOLUTION_TEXT)).toBeVisible()
   }
 
-  public gameFinishedWithWinner(expectedWinner: string) {
-    expect(this.page.getByText(`${expectedWinner} has won`)).toBeVisible()
-    expect(this.page.getByText(SOLUTION_TEXT)).toBeVisible()
+  public async gameFinishedWithWinner(expectedWinner: string) {
+    const dialog = this.page.getByTestId(ENDGAME_DIALOG)
+    await expect(dialog.getByText(`${expectedWinner} has won`)).toBeVisible()
+    await expect(dialog.getByText(SOLUTION_TEXT)).toBeVisible()
   }
 
   public async joinRoom(browser: Browser, roomCode: string) {
@@ -77,6 +81,10 @@ export class GamePlayer {
     this._wordIndex += 1
   }
 
+  public async waitForEndgameVisible() {
+    await expect(this.page.getByTestId(ENDGAME_DIALOG)).toBeVisible()
+  }
+
   public async waitForKeyboardReady() {
     await expect(this.page.locator('button#keyboard-enter')).toBeVisible()
     await expect(this.page.locator('button#keyboard-backspace')).toBeVisible()
@@ -84,11 +92,11 @@ export class GamePlayer {
   }
 
   public async waitForPregameHidden() {
-    await expect(this.page.getByText(PREGAME_DIALOG_TEXT)).toBeHidden()
+    await expect(this.page.getByTestId(PREGAME_DIALOG)).toBeHidden()
   }
 
   public async waitForPregameVisible() {
-    await expect(this.page.getByText(PREGAME_DIALOG_TEXT)).toBeVisible()
+    await expect(this.page.getByTestId(PREGAME_DIALOG)).toBeVisible()
   }
 
   private async typeWord(word: string) {

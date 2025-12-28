@@ -8,7 +8,7 @@
     const { size, variant, ...props }: Props = $props()
 
     const classes = tv({
-        base: 'flex items-center justify-center gap-1 rounded-md px-4 py-2 text-sm font-medium outline-none transition-transform [&>svg]:size-4',
+        base: 'flex items-center justify-center gap-1 rounded-md px-4 py-2 text-sm font-medium outline-none ring-2 ring-transparent transition-all [&>svg]:size-4',
         defaultVariants: {
             variant: 'default'
         },
@@ -18,10 +18,10 @@
                 sm: 'px-2 py-1'
             },
             variant: {
-                default: 'bg-slate-200 text-black disabled:bg-slate-50 disabled:text-slate-400',
-                muted: 'bg-white text-black hover:bg-slate-200',
-                primary: 'bg-primary text-primary-foreground disabled:bg-primary/50 disabled:text-primary-foreground/75',
-                secondary: 'bg-secondary text-secondary-foreground disabled:bg-secondary/50 disabled:text-secondary-foreground/50'
+                default: 'bg-slate-200 text-black focus-visible:ring-slate-400 disabled:bg-slate-50 disabled:text-slate-300',
+                muted: 'bg-white text-black hover:bg-slate-200 focus-visible:ring-slate-400',
+                primary: 'bg-primary focus-visible:ring-primary/50 text-primary-foreground disabled:bg-primary/50 disabled:text-primary-foreground/75',
+                secondary: 'bg-secondary focus-visible:ring-secondary/50 text-secondary-foreground disabled:bg-secondary/50 disabled:text-secondary-foreground/50'
             }
         }
     })
